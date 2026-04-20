@@ -130,12 +130,20 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
     } catch (e) {
       // Извлекаем понятное сообщение об ошибке
       String errorMessage = 'Не удалось проанализировать изображение';
-      
+      bool isServerOverloaded = false;
+
       if (e is Exception) {
         final errorString = e.toString();
-        
+
+        // Проверяем на ошибку перегрузки сервера (503)
+        if (errorString.contains('503') ||
+            errorString.contains('high demand') ||
+            errorString.contains('UNAVAILABLE')) {
+          errorMessage = 'Сервер AI перегружен. Попробуйте через минуту';
+          isServerOverloaded = true;
+        }
         // Убираем префикс "Exception: " если есть
-        if (errorString.startsWith('Exception: ')) {
+        else if (errorString.startsWith('Exception: ')) {
           errorMessage = errorString.substring(11);
         } else if (errorString.startsWith('Exception:')) {
           errorMessage = errorString.substring(10).trim();
@@ -145,10 +153,10 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
       } else {
         errorMessage = e.toString();
       }
-      
+
       // Логируем ошибку для отладки
       print('❌ Ошибка анализа изображения: $errorMessage');
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -156,12 +164,12 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               errorMessage,
               style: const TextStyle(fontSize: 14),
             ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
+            backgroundColor: isServerOverloaded ? Colors.orange : Colors.red,
+            duration: Duration(seconds: isServerOverloaded ? 7 : 5),
             action: SnackBarAction(
-              label: 'OK',
+              label: isServerOverloaded ? 'Повторить' : 'OK',
               textColor: Colors.white,
-              onPressed: () {},
+              onPressed: isServerOverloaded ? _analyzeImage : () {},
             ),
           ),
         );

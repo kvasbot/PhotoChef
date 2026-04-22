@@ -329,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PhotoChef 2025',
+                        'PhotoChef 2026',
                         style: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 12,
